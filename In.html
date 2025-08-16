@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>To-Do App</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background: #f4f4f4;
+        margin: 0;
+        padding: 0;
+    }
+    .container {
+        width: 90%;
+        max-width: 500px;
+        margin: 30px auto;
+        background: #fff;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    h1 {
+        text-align: center;
+    }
+    input, button {
+        padding: 10px;
+        margin: 5px 0;
+        width: 100%;
+        font-size: 16px;
+    }
+    button {
+        background: #28a745;
+        color: #fff;
+        border: none;
+        cursor: pointer;
+    }
+    button:hover {
+        background: #218838;
+    }
+    ul {
+        list-style: none;
+        padding: 0;
+    }
+    li {
+        background: #eee;
+        padding: 10px;
+        margin: 5px 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-radius: 5px;
+    }
+    .completed {
+        text-decoration: line-through;
+        color: gray;
+    }
+    .actions button {
+        margin-left: 5px;
+        padding: 5px 10px;
+        font-size: 14px;
+    }
+    .edit-btn { background: #ffc107; }
+    .delete-btn { background: #dc3545; color: #fff; }
+    .complete-btn { background: #007bff; color: #fff; }
+</style>
+</head>
+<body>
+<div class="container">
+    <h1>📋 To-Do List</h1>
+    <input type="text" id="taskInput" placeholder="Enter your task">
+    <input type="datetime-local" id="taskDateTime">
+    <button onclick="addTask()">Add Task</button>
+    <ul id="taskList"></ul>
+</div>
+
+<script>
+let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+
+function saveTasks() {
+    localStorage.setItem("tasks", JSON.stringify(tasks));
+}
+
+function renderTasks() {
+    const taskList = document.getElementById("taskList");
+    taskList.innerHTML = "";
+    tasks.forEach((task, index) => {
+        const li = document.createElement("li");
+        
+        const taskText = document.createElement("span");
+        taskText.textContent = `${task.text} (${task.dateTime || "No date"})`;
+        if (task.completed) taskText.classList.add("completed");
+
+        const actions = document.createElement("div");
+        actions.classList.add("actions");
+
+        const completeBtn = document.createElement("button");
+        completeBtn.textContent = "✔";
+        completeBtn.classList.add("complete-btn");
+        completeBtn.onclick = () => {
+            task.completed = !task.completed;
+            saveTasks();
+            renderTasks();
+        };
+
+        const editBtn = document.createElement("button");
+        editBtn.textContent = "✏";
+        editBtn.classList.add("edit-btn");
+        editBtn.onclick = () => {
+            const newText = prompt("Edit Task:", task.text);
+            const newDate = prompt("Edit Date (YYYY-MM-DD HH:MM):", task.dateTime);
+            if (newText !== null && newText.trim() !== "") task.text = newText;
+            if (newDate !== null) task.dateTime = newDate;
+            saveTasks();
+            renderTasks();
+        };
+
+        const deleteBtn = document.createElement("button");
+        deleteBtn.textContent = "🗑";
+        deleteBtn.classList.add("delete-btn");
+        deleteBtn.onclick = () => {
+            tasks.splice(index, 1);
+            saveTasks();
+            renderTasks();
+        };
+
+        actions.appendChild(completeBtn);
+        actions.appendChild(editBtn);
+        actions.appendChild(deleteBtn);
+
+        li.appendChild(taskText);
+        li.appendChild(actions);
+        taskList.appendChild(li);
+    });
+}
+
+function addTask() {
+    const taskInput = document.getElementById("taskInput");
+    const taskDateTime = document.getElementById("taskDateTime");
+    const text = taskInput.value.trim();
+    const dateTime = taskDateTime.value;
+
+    if (text === "") {
+        alert("Please enter a task!");
+        return;
+    }
+
+    tasks.push({ text, dateTime, completed: false });
+    saveTasks();
+    renderTasks();
+    taskInput.value = "";
+    taskDateTime.value = "";
+}
+
+renderTasks();
+</script>
+</body>
+</html>
